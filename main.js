@@ -107,3 +107,92 @@ db.testdb.find({"gpa":{$in:[3.4,3.5,3.6,3.7]},"status":"student"},{"name":1,"gpa
 // Find All Student GPA except for [3.4,3.5,3.6,3.7]
 db.testdb.find({"gpa":{$nin:[3.4,3.5,3.6,3.7]},"status":"student"},{"name":1,"gpa":1,"status":1,"_id":0}).pretty() // Not in Query
 
+// OR search 
+
+// Find All Students status="dropout" OR GPA Less Than 3.0
+
+db.testdb.find({$or:[{"status":"dropout"},{"gpa":{$lt:3.0}}]},{"name":1,"_id":0,"gpa":1,"status":1})
+
+// Find All Student Whose GPA NOT GREATER THAN 3.0
+db.testdb.find({"gpa":{$not:{$gt:3.0}}},{"name":1,"_id":0,"gpa":1,"status":1}).pretty()
+
+// Apply Limit
+
+// Find 3 Students Whose GPA IS NOT GREATER THAN 3.0
+db.testdb.find({"gpa":{$not:{$gt:3.0}}},{"name":1,"_id":0,"gpa":1,"status":1}).limit(3).pretty()
+
+// Skiping Result
+
+// Find All Students Whose GPA IS NOT GREATER THAN Skip First 3 Students
+db.testdb.find({"gpa":{$not:{$gt:3.0}}},{"name":1,"_id":0,"gpa":1,"status":1}).skip(3).pretty()
+
+
+// Sorting 
+
+// Find All Student Sort BY Name
+db.testdb.find({},{"name":1,"_id":0,"gpa":1,"status":1}).sort({"name":1}).pretty()
+// Value 1 for Ascending Sort
+// Value -1 for Descending Sort
+
+
+//Find Last 4 Student
+
+// Trick Find All Sort it in a Descending Order then Limit 4
+db.testdb.find({},{"name":1,"_id":1,"gpa":1,"status":1}).sort({"_id":-1}).limit(4)
+
+// The Above Query Alway Give You a Result of Descending Order
+
+// Try to Use Another Trick
+
+// First Count the Entry 
+db.testdb.count() // It will Give you a Number of Records
+
+// So the Another Trick For Find Last 4 Students
+db.testdb.find({},{"name":1,"_id":1,"gpa":1,"status":1}).skip(db.testdb.count() -4)
+
+
+
+
+// Regular Expression in Mongo DB
+
+ // '/' Start of Regular Expression
+ // '^' Beginning of Line
+ // '.*' Any Number of Character
+ // '$' End Line
+
+// Find All Students Whose Name is Start With D
+db.testdb.find({"name":/^D.*$/},{"name":1,"_id":0,"gpa":1,"status":1}).pretty()
+
+// Find All Students Whose Any Test is Equal to 0
+db.testdb.find({"tests":0},{"name":1,"_id":0,"tests":1}).pretty()
+
+
+// Find All Students Whose Test Results Contains 0 and 10
+db.testdb.find({"tests":{$all:[0,10]}},{"name":1,"_id":0,"tests":1}).pretty()
+
+// Find All Students Who get 10 in there First Test
+// Use Index in that Kind of Situation
+
+db.testdb.find({"tests.0":10},{"name":1,"_id":0,"tests":1}).pretty()
+
+//Count All Students Who get 10 in there First Test
+db.testdb.find({"tests.0":10},{"name":1,"_id":0,"tests":1}).count()
+
+// Add New Test Score 9 to 'Dale Cooper' >>>>> Push
+db.testdb.update({"name":"Dale Cooper"},{$push:{"tests":9}})
+
+// Now Find the Dale Cooper Test Array
+db.testdb.find({"name":"Dale Cooper"},{"name":1,"_id":0,"tests":1}).pretty()
+
+// Find All Students Who Takes 4 Tests
+// That means the tests Array Size =4
+
+db.testdb.find({"tests":{$size:4}},{"name":1,"_id":0,"tests":1})
+
+// Find All Students Who Not Takes 4 Tests
+// That means the tests Array Size !=4
+
+db.testdb.find({"tests.length":{$ne:4}},{"name":1,"_id":0,"tests":1}).pretty()
+
+
+
