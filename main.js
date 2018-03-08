@@ -196,3 +196,62 @@ db.testdb.find({"tests.length":{$ne:4}},{"name":1,"_id":0,"tests":1}).pretty()
 
 
 
+// INDEXING AND AGGREGATION
+
+// Now drop all data from the Collection
+db.testdb.drop()
+
+// Now Create 500000 Account Has Different Name and Random Age
+for(var i=0;i<500000;i++){
+	db.testdb.insert({"account":"Account "+i,"age":Math.floor(Math.random()*90)})
+}
+
+// Now Count the Entry
+db.testdb.count()
+
+// Now Find All the Account of Age 50 with Execution Status
+db.testdb.find({"age":50}).explain("executionStats")
+
+// Execution Status Shows it Takes 271 miliSeconds
+// and Total Examine Document is 500000.
+// This is not a Good Approach 
+
+//Lets create a compound index based on first age and then account. 
+//We start with age because we plan on querying for age. 
+//Indexing should be based on improving the performance of a query
+
+db.testdb.ensureIndex({"age":1,"account":1}) // This will Take Couple of Seconds to Complete the Indexing
+
+// Now  we Execute the Exact Same Query As Before
+db.testdb.find({"age":50}).explain("executionStats")
+
+// Now The Execution time is reduced to 0 ms
+// and Key Examine is 5580 nos
+// Total Document Examine 5580
+
+// Actual Indexing is "indexName" : "age_1_account_1"
+
+// Another Important Command is get Index
+db.testdb.getIndexes() // You Will See the 
+
+// Now Drop the Index 
+db.testdb.dropIndex("age_1_account_1")
+
+// Search Account 'Account 100' and See the Execution Status
+db.testdb.find({"account":"Account 100"}).explain("executionStats")
+
+// Again its Take 261ms and Look Through(Examine) 500000 documents
+
+
+// Since All of Our Account is Unique
+
+// So ensure Our Account is Unique and then Search
+db.testdb.ensureIndex({"account":1},{"unique":true})
+
+// Now Rerun Query as Before
+db.testdb.find({"account":"Account 100"}).explain("executionStats") // Its Execution Time 1ms and Examine only 1 Doc
+
+
+
+
+
